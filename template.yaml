@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample REST Api DynamoDB App
+
+Globals:
+  Function:
+    Timeout: 3
+
+
+Parameters:
+  TableName:
+    AllowedPattern: ^[A-Za-z]+$
+    ConstraintDescription: Required parameter. Must be characters only. No numbers allowed.
+    Description: (Required) The name of the new DynamoDB table you want to create and save to. Minimum 3 characters
+    MaxLength: 50
+    Default: yourTableName
+    MinLength: 3
+    Type: String
+
+Resources:
+  CreateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: create_item.put_handler
+      Runtime: python3.7
+      Role: !GetAtt IamRoleLambda.Arn
+      Events:
+        CreateItemApi:
+          Type: Api
+          Properties:
+            Path: /ddb/create
+            Method: post
+  IamRoleLambda:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+      ManagedPolicyArns: ['arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole','arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess','arn:aws:iam::aws:policy/AmazonSSMFullAccess']
+  DynamoDb:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema:
+        - KeyType: HASH
+          AttributeName:
+            Fn::Sub: ${TableName}Id
+      TableName:
+        Ref: TableName
+      AttributeDefinitions:
+        - AttributeName:
+            Fn::Sub: ${TableName}Id
+          AttributeType: S
+      ProvisionedThroughput:
+        WriteCapacityUnits: 1
+        ReadCapacityUnits: 1
+  SsmParameterDDBTableName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: DDB Table Name
+      Name: /serverlessrepo/ddb-api/ddb/table
+      Type: String
+      Value: !Ref TableName
+
+Outputs:
+  CreateItemApi:
+    Description: "API Gateway endpoint URL for Beta stage for DynamoDB Create Item Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Beta/ddb/create/"
+  CreateFunction:
+    Description: "Create Item Function ARN"
+    Value: !GetAtt CreateFunction.Arn
+  DynamoDb:
+    Description: "DynamoDB Table"
+    Value: !GetAtt DynamoDb.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-DDB"
