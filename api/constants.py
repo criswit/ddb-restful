@@ -8,6 +8,6 @@ ssm_parameter_ddb_table_name = '/serverlessrepo/ddb-api/ddb/table'
 
 # return code/status constants
 
-statusCode_success = 0
-statusCode_warning = 200
-statusCode_failure = 1
+statusCode_success = 200
+statusCode_warning = 100
+statusCode_failure = 201
