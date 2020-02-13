@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
 
+import constants
+
 
 def make_create_item(table_name, data):
     timestamp = str(datetime.utcnow().timestamp())
@@ -13,3 +15,12 @@ def make_create_item(table_name, data):
         'updatedAt': timestamp,
     }
     return item
+
+
+def assess_job_status(successful_records, failed_records):
+    if successful_records >= 0 and failed_records == 0:
+        return constants.statusCode_success
+    if successful_records > 0 and failed_records > 0:
+        return constants.statusCode_warning
+    if successful_records == 0 and failed_records > 0:
+        return constants.statusCode_failure

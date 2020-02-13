@@ -71,8 +71,8 @@ Resources:
 
 Outputs:
   CreateItemApi:
-    Description: "API Gateway endpoint URL for Beta stage for DynamoDB Create Item Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Beta/ddb/create/"
+    Description: "API Gateway endpoint URL for Stage, DynamoDB Create Item Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/ddb/create/"
   CreateFunction:
     Description: "Create Item Function ARN"
     Value: !GetAtt CreateFunction.Arn

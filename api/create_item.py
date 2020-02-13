@@ -18,14 +18,25 @@ def put_handler(event, context):
     dict_body = json.loads(event_body)
     dict_len = len(dict_body)
     pp.pprint('Item count: ' + str(dict_len))
+    success_count = 0
+    failure_count = 0
     for i in range(0, dict_len):
         item = dict_body[i]
         pp.pprint(json.dumps(item))
         try:
             awsops.create_ddb_item(ddb, tools.make_create_item(ddb_table_name, item))
+            success_count = success_count + 1
         except KeyError as err:
             print('Handling run-time error, KeyError: ', err)
+            failure_count = failure_count + 1
+
+    status_code = tools.assess_job_status(success_count, failure_count)
+    pp.pprint('Calculated Job Status: ' + str(status_code))
 
     return {
-        "return_code": 0
+        "statusCode": status_code,
+        "body": json.dumps({
+            "successful_requests": str(success_count),
+            "failed_requests": str(failure_count)
+        }),
     }
